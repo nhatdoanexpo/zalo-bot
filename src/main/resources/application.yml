@@ -1,5 +1,5 @@
 selenium:
-  headless: true
+  headless: false
 server:
   port: 7171
 logging:
