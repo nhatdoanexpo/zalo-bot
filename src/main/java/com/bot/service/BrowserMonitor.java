@@ -1,9 +1,13 @@
 package com.bot.service;
 
 import com.bot.config.BrowserConfig;
+import com.google.gson.Gson;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +21,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
+import static org.springframework.core.io.support.SpringFactoriesLoader.FailureHandler.handleMessage;
+
 @Service
 @Log
 public class BrowserMonitor {
 
     final JobHandler jobHandler;
     final BrowserConfig browserConfig;
+
+    public String profile = "user_99";
 
     private static final String ZALO_URL = "https://chat.zalo.me";
 
@@ -41,7 +49,7 @@ public class BrowserMonitor {
             if (blockActionByKey(blockingKey, key)) {
                 Executors.newSingleThreadExecutor().submit(() -> {
                     try {
-                        this.handleBrowser();
+                        this.handleBrowser(profile);
                     } catch (Exception e) {
                         log.log(Level.WARNING, "BrowserMonitor >> startBrowser >> Exception:", e);
                     } finally {
@@ -56,32 +64,53 @@ public class BrowserMonitor {
     }
 
 
-    void handleBrowser() throws IOException {
-        var driver = browserConfig.getChromeDriver("user_99");
+    void handleBrowser(String profile) throws IOException {
+        var driver = browserConfig.getChromeDriver(profile);
         try {
             driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
             driver.get(ZALO_URL);
             Thread.sleep(TimeUnit.SECONDS.toMillis(10));
             var js = (JavascriptExecutor) driver;
-            js.executeScript("localStorage.removeItem('postMessageKey');");
-            var jsScript = """
-                    window.addEventListener('message', function(event) {
-                         var message = event.data;
-                         localStorage.setItem('postMessageKey', message);
-                    });
-                    """;
-            js.executeScript(jsScript);
-            var message = "";
-            while (!message.equals("exist")) {
-                Thread.sleep(TimeUnit.SECONDS.toMillis(3));
-                var postMessage = (String) js.executeScript("return window.localStorage.getItem('postMessageKey');");
-                message = StringUtils.defaultIfBlank(postMessage, "");
-                log.log(Level.INFO, "BrowserMonitor >> handleBrowser >> receive message: {0}", message);
-                if (StringUtils.isNotBlank(message)) {
-                    jobHandler.sendAction(driver, message);
-                }
 
+            // Vòng lặp vô hạn để chờ và xử lý message
+            while (true) {
+                // Chờ cho đến khi có sự kiện "CLIENT_IN"
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofDays(1));
+                By clientInEvent = By.xpath("//body[@data-client-in]");
+                wait.until(ExpectedConditions.presenceOfElementLocated(clientInEvent));
+
+                // Lấy ra message và xử lý
+                Object result = js.executeScript("return document.querySelector('body').dataset.clientIn");
+                if (result instanceof Map) {
+                    Map<String, Object> message = (Map<String, Object>) result;
+                    // Xử lý message ở đây
+                    // ...
+
+                    // Gửi lại message qua "CLIENT_OUT"
+                    message.put("status", "DONE");
+                    js.executeScript("document.querySelector('body').dispatchEvent(new CustomEvent('CLIENT_OUT', { detail: " + new Gson().toJson(message) + " }))");
+
+                }
             }
+
+//            var jsScript = """
+//                    window.addEventListener('CLIENT_IN', function(event) {
+//                         var message = event.detail;
+//                         localStorage.setItem('postMessageKey', message);
+//                    });
+//                    """;
+//            js.executeScript(jsScript);
+//            var message = "";
+//            while (!message.equals("exist")) {
+//                Thread.sleep(TimeUnit.SECONDS.toMillis(3));
+//                var postMessage = (String) js.executeScript("return window.localStorage.getItem('postMessageKey');");
+//                message = StringUtils.defaultIfBlank(postMessage, "");
+//                log.log(Level.INFO, "BrowserMonitor >> handleBrowser >> receive message: {0}", message);
+//                if (StringUtils.isNotBlank(message)) {
+//                    jobHandler.sendAction(driver, message);
+//                }
+//
+//            }
 
         } catch (Exception e) {
             log.log(Level.WARNING, "BrowserMonitor >> handleBrowser >> Exception:", e);

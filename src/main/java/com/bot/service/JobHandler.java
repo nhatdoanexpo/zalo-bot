@@ -1,5 +1,6 @@
 package com.bot.service;
 
+import com.bot.model.PostDataMessage;
 import com.bot.model.PostMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.java.Log;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 
+import static com.bot.model.PostDataMessage.*;
+
 @Service
 @Log
 public class JobHandler {
@@ -19,16 +22,23 @@ public class JobHandler {
 
     public void sendAction(WebDriver driver, String message) {
         try {
+            var postMessage = convertActionMessage(message);
+            ActionType actionType = postMessage.getActionType();
+          switch (actionType){
+              case SEND_KEY:
+                  break;
+              case UPDATE_PROFILE:
+                  break;
+              default:
+                  log.log(Level.INFO, "not found action >> {0}", message);
+                  break;
+          }
+            postMessage.getDetail().addProperty("status","DONE");
 
-            var postMessage = convertMessage(message);
-            if (PostMessage.Status.NEW.equals(postMessage.getMessageStatus())) {
-                log.log(Level.INFO, "JobHandler >> sendAction >> new action >> {0}", message);
-                // after done remove set message in localStorage
-                postMessage.setMessageStatus(PostMessage.Status.DONE);
-                var json = objectMapper.writeValueAsString(postMessage);
-                var js = (JavascriptExecutor) driver;
-                js.executeScript("window.localStorage.setItem(arguments[0], arguments[1]);", ACTION_KEY, json);
-            }
+            log.log(Level.INFO, "JobHandler >> sendAction >> new action >> {0}", message);
+            var json = objectMapper.writeValueAsString(postMessage);
+            var js = (JavascriptExecutor) driver;
+            js.executeScript("document.querySelector('body').dispatchEvent(new CustomEvent('CLIENT_OUT', arguments[0] ))",json);
 
         } catch (Exception e) {
             log.log(Level.WARNING, "JobHandler >> sendAction >> Exception:", e);
@@ -36,12 +46,23 @@ public class JobHandler {
 
     }
 
+
+
     public PostMessage convertMessage(String message) {
         try {
             return objectMapper.readValue(message, PostMessage.class);
         } catch (Exception e) {
             log.log(Level.WARNING, MessageFormat.format("JobHandler >> convertMessage >> can not convert message from: {0} >> Exception:", message), e);
             return new PostMessage();
+        }
+    }
+
+    public PostDataMessage convertActionMessage(String message) {
+        try {
+            return objectMapper.readValue(message, PostDataMessage.class);
+        } catch (Exception e) {
+            log.log(Level.WARNING, MessageFormat.format("JobHandler >> convertMessage >> can not convert message from: {0} >> Exception:", message), e);
+            return new PostDataMessage();
         }
     }
 
