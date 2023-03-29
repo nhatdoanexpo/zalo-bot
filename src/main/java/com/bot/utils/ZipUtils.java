@@ -1,5 +1,9 @@
 package com.bot.utils;
 
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.util.Zip4jConstants;
 import org.apache.commons.io.CopyUtils;
 
 import java.io.*;
@@ -136,12 +140,66 @@ public class ZipUtils {
         bos.close();
     }
 
-    public static void main(String[] args) throws IOException {
+
+
+
+    public static void main(String[] args) throws IOException, ZipException {
 // Nén các tệp tin trong thư mục sourceFolder vào tệp tin ZIP tại đường dẫn zipFilePath
-       ZipUtils.zipDirectory("C:\\New folder\\zalo-bot\\src\\main\\resources\\zip\\nhat.doan.expo", "C:\\New folder\\zalo-bot\\src\\main\\resources\\unzip\\nhat.doan.expo.zip");
+//       ZipUtils.zipDirectory("C:\\New folder\\zalo-bot-v1\\src\\main\\resources\\zip\\nhat.doan.expo", "C:\\New folder\\zalo-bot-v1\\src\\main\\resources\\unzip\\nhat.doan.expo.zip");
+     //    ZipUtils.zip4jDirectory("D:\\Project\\zalo-bot-v1\\src\\main\\resources\\ac", "C:\\New folder\\zalo-bot-v1\\src\\main\\resources\\unzip\\ac.zip","nhat123");
 
 // Giải nén tệp tin ZIP tại đường dẫn zipFilePath vào thư mục destinationFolder
-     ZipUtils.unzipFile("C:\\New folder\\zalo-bot\\src\\main\\resources\\unzip\\nhat.doan.expo.zip", "C:\\New folder\\zalo-bot\\src\\main\\resources\\zip\\nhat1");
-
+//     ZipUtils.unzipFile("C:\\New folder\\zalo-bot-v1\\src\\main\\resources\\unzip\\nhat.doan.expo.zip", "C:\\New folder\\zalo-bot-v1\\src\\main\\resources\\zip\\nhat1");
+        //ZipUtils.unzip4jFile("C:\\New folder\\zalo-bot-v1\\src\\main\\resources\\unzip\\ac.zip", "C:\\New folder\\zalo-bot-v1\\src\\main\\resources","nhat123");
+//
     }
+
+    private static void unzip4jFile(String pathZipFile, String desFolder, String pw) throws ZipException {
+
+            ZipFile zipFile = new ZipFile(pathZipFile);
+            if (zipFile.isEncrypted()) {
+                zipFile.setPassword(pw);
+            }
+            zipFile.extractAll(desFolder);
+            System.out.println("Done!!!");
+    }
+
+    private static void zip4jDirectory(String srcFolder, String outPutFile, String pw) throws IOException, ZipException {
+//         outPutFile = "C:/demo/zip4jFolderExample.zip";
+//          srcFolder = "C:/demo/data";
+//          pw = "yourPassword";
+            ZipParameters parameters = new ZipParameters();
+            parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+            parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
+
+            if (pw.length() > 0) {
+                parameters.setEncryptFiles(true);
+                parameters.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
+                parameters.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
+                parameters.setPassword(pw);
+            }
+
+            // Zip files inside a folder
+            // An exception will be thrown if the output file already exists
+            File outputFile = new File(outPutFile);
+            if(!outputFile.getParentFile().exists()){
+                outputFile.getParentFile().mkdirs();
+            }
+            net.lingala.zip4j.core.ZipFile zipFile = new net.lingala.zip4j.core.ZipFile(outputFile);
+
+            File sourceFolder = new File(srcFolder);
+            // false - indicates archive should not be split and 0 is split length
+            zipFile.createZipFileFromFolder(sourceFolder, parameters, false, 0);
+
+            // Zip a single file
+            // An exception will be thrown if the output file already exists
+//            outputFile = new File("C:/demo/zip4jFileExample.zip");
+//            zipFile = new ZipFile(outputFile);
+//            File sourceFile = new File("C:/demo/data/sql.log");
+//            zipFile.addFile(sourceFile, parameters);
+//            System.out.println("Done!!!");
+        }
+
+
+
 }
