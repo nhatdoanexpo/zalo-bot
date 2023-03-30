@@ -8,6 +8,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,8 @@ import static org.springframework.core.io.support.SpringFactoriesLoader.FailureH
 @Service
 @Log
 public class BrowserMonitor {
+    private static final Logger logger = LoggerFactory.getLogger(BrowserMonitor.class);
+
 
     final JobHandler jobHandler;
     final BrowserConfig browserConfig;
@@ -51,15 +55,15 @@ public class BrowserMonitor {
                     try {
                         this.handleBrowser(profile);
                     } catch (Exception e) {
-                        log.log(Level.WARNING, "BrowserMonitor >> startBrowser >> Exception:", e);
-                    } finally {
+                        logger.error("BrowserMonitor >> startBrowser >> Exception", e);
+                         } finally {
                         blockingKey.remove(key);
                     }
                 });
             }
         } catch (Exception e) {
-            log.log(Level.WARNING, "BrowserMonitor >> startBrowser >> Exception:", e);
-        }
+            logger.error("BrowserMonitor >> startBrowser >> Exception", e);
+   }
 
     }
 
@@ -113,7 +117,8 @@ public class BrowserMonitor {
 //            }
 
         } catch (Exception e) {
-            log.log(Level.WARNING, "BrowserMonitor >> handleBrowser >> Exception:", e);
+            logger.error("BrowserMonitor >> handleBrowser >> Exception:", e);
+
             Thread.currentThread().interrupt();
         } finally {
             driver.quit();

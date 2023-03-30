@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.java.Log;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -16,6 +18,7 @@ import static com.bot.model.PostDataMessage.*;
 @Service
 @Log
 public class JobHandler {
+    private static final Logger logger = LoggerFactory.getLogger(JobHandler.class);
 
     private static final String ACTION_KEY = "postMessageKey";
     final ObjectMapper objectMapper = new ObjectMapper();
@@ -30,18 +33,18 @@ public class JobHandler {
               case UPDATE_PROFILE:
                   break;
               default:
-                  log.log(Level.INFO, "not found action >> {0}", message);
+                  logger.info( "not found action >> {0}", message);
                   break;
           }
             postMessage.getDetail().addProperty("status","DONE");
 
-            log.log(Level.INFO, "JobHandler >> sendAction >> new action >> {0}", message);
+            logger.info( "JobHandler >> sendAction >> new action >> {0}", message);
             var json = objectMapper.writeValueAsString(postMessage);
             var js = (JavascriptExecutor) driver;
             js.executeScript("document.querySelector('body').dispatchEvent(new CustomEvent('CLIENT_OUT', arguments[0] ))",json);
 
         } catch (Exception e) {
-            log.log(Level.WARNING, "JobHandler >> sendAction >> Exception:", e);
+            logger.info("JobHandler >> sendAction >> Exception:", e);
         }
 
     }

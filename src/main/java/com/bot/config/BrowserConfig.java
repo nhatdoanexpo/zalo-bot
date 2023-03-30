@@ -8,6 +8,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
@@ -29,6 +31,8 @@ import java.util.logging.Level;
 @Service
 @Log
 public class BrowserConfig {
+    private static final Logger logger = LoggerFactory.getLogger(BrowserConfig.class);
+
 
     @Value("${selenium.headless}")
     private boolean headLessBrowser = false;
@@ -61,7 +65,7 @@ public class BrowserConfig {
         if (!this.headLessBrowser) {
             customOption.addAll(this.browserOptions.stream().filter(it -> !it.contains("headless")).toList());
         } else {
-            log.log(Level.INFO,"BrowserConfig >> open chrome in headless mode");
+            logger.info("BrowserConfig >> open chrome in headless mode");
             customOption.addAll(this.browserOptions);
         }
         customOption.add(MessageFormat.format("{0}{1}", "--user-data-dir=", profilePath));
