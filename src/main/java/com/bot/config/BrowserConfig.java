@@ -3,7 +3,7 @@ package com.bot.config;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.github.bonigarcia.wdm.config.DriverManagerType;
 import jakarta.annotation.PostConstruct;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -25,11 +25,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.logging.Level;
 
 @Service
-@Log
+@Slf4j
 public class BrowserConfig {
     private static final Logger logger = LoggerFactory.getLogger(BrowserConfig.class);
 
@@ -51,7 +49,7 @@ public class BrowserConfig {
                 "--headless",
 //                "--remote-debugging-port=9222",
                 "--remote-allow-origins=*"));
-        WebDriverManager.getInstance(DriverManagerType.CHROME).setup();
+        WebDriverManager.getInstance(DriverManagerType.CHROMIUM).setup();
     }
 
 

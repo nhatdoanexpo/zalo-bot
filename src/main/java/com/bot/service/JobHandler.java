@@ -3,7 +3,7 @@ package com.bot.service;
 import com.bot.model.PostDataMessage;
 import com.bot.model.PostMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
@@ -11,12 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
-import java.util.logging.Level;
 
-import static com.bot.model.PostDataMessage.*;
+import static com.bot.model.PostDataMessage.ActionType;
 
 @Service
-@Log
+@Slf4j
 public class JobHandler {
     private static final Logger logger = LoggerFactory.getLogger(JobHandler.class);
 
@@ -55,7 +54,7 @@ public class JobHandler {
         try {
             return objectMapper.readValue(message, PostMessage.class);
         } catch (Exception e) {
-            log.log(Level.WARNING, MessageFormat.format("JobHandler >> convertMessage >> can not convert message from: {0} >> Exception:", message), e);
+            log.error(MessageFormat.format("JobHandler >> convertMessage >> can not convert message from: {0} >> Exception:", message), e);
             return new PostMessage();
         }
     }
@@ -64,7 +63,7 @@ public class JobHandler {
         try {
             return objectMapper.readValue(message, PostDataMessage.class);
         } catch (Exception e) {
-            log.log(Level.WARNING, MessageFormat.format("JobHandler >> convertMessage >> can not convert message from: {0} >> Exception:", message), e);
+            log.error( MessageFormat.format("JobHandler >> convertMessage >> can not convert message from: {0} >> Exception:", message), e);
             return new PostDataMessage();
         }
     }

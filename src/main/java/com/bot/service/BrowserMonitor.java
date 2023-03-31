@@ -2,8 +2,7 @@ package com.bot.service;
 
 import com.bot.config.BrowserConfig;
 import com.google.gson.Gson;
-import lombok.extern.java.Log;
-import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -21,12 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-
-import static org.springframework.core.io.support.SpringFactoriesLoader.FailureHandler.handleMessage;
 
 @Service
-@Log
+@Slf4j
 public class BrowserMonitor {
     private static final Logger logger = LoggerFactory.getLogger(BrowserMonitor.class);
 
